@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Hungry Hound</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="admin-styles.css">
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: #ff6b81;
+        }
+
+        /* Welcome Screen Animation */
+        #welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #welcome-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .welcome-content-animation {
+            text-align: center;
+            color: white;
+        }
+
+        .welcome-content-animation h1 {
+            font-size: 3rem;
+            transform: scale(0);
+            opacity: 0;
+            animation: welcome-text 1s forwards;
+        }
+
+        .welcome-content-animation .logo-animation {
+            width: 200px;
+            height: 200px;
+            background: url('logo.png') no-repeat center center;
+            background-size: contain;
+            margin: 0 auto 20px;
+            transform: rotate(-180deg) scale(0);
+            opacity: 0;
+            animation: logo-reveal 1s forwards;
+        }
+
+        @keyframes welcome-text {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes logo-reveal {
+            0% {
+                transform: rotate(-180deg) scale(0);
+                opacity: 0;
+            }
+            70% {
+                transform: rotate(20deg) scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: rotate(0) scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Overlay Animation -->
+    <div id="welcome-overlay">
+        <div class="welcome-content-animation">
+            <div class="logo-animation"></div>
+            <h1>Welcome, Admin!</h1>
+        </div>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="admin-container">
+        <!-- Welcome Section -->
+        <section id="welcome-section" class="welcome-section">
+            <div class="welcome-content">
+                <div class="welcome-header">
+                    <img src="logo.png" alt="Hungry Hound Logo" class="welcome-logo">
+                    <div class="welcome-text">
+                        <h1>Welcome to Hungry Hound Admin Dashboard</h1>
+                        <p>Manage your restaurant's orders, menu, and performance with ease.</p>
+                    </div>
+                </div>
+                
+                <div class="quick-stats">
+                    <div class="stat-card total-orders">
+                        <span class="material-icons">receipt_long</span>
+                        <div class="stat-details">
+                            <h3 id="total-orders-count">0</h3>
+                            <p>Total Orders</p>
+                        </div>
+                    </div>
+                    <div class="stat-card pending-orders">
+                        <span class="material-icons">schedule</span>
+                        <div class="stat-details">
+                            <h3 id="pending-orders-count">0</h3>
+                            <p>Pending Orders</p>
+                        </div>
+                    </div>
+                    <div class="stat-card completed-orders">
+                        <span class="material-icons">check_circle</span>
+                        <div class="stat-details">
+                            <h3 id="completed-orders-count">0</h3>
+                            <p>Completed Orders</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="welcome-actions">
+                    <button onclick="showSection('orders')">
+                        <span class="material-icons">list_alt</span>
+                        View Orders
+                    </button>
+                    <button onclick="showSection('add-food')">
+                        <span class="material-icons">add_circle</span>
+                        Add Food Item
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <header class="admin-header">
+            <div class="logo">
+                <img src="logo.png" alt="Hungry Hound Logo" style="height: 50px;">
+                <h1>Admin Dashboard</h1>
+            </div>
+            <nav class="admin-nav">
+                <button onclick="showSection('welcome')">Home</button>
+                <button onclick="showSection('users')">Users</button>
+                <button onclick="showSection('orders')">Orders</button>
+                <button onclick="showSection('analytics')">Analytics</button>
+                <button onclick="showSection('search')">Menu</button>
+                <button onclick="showSection('add-food')">Add Food</button>
+                <button onclick="showSection('revenue')">Revenue</button>
+            </nav>
+        </header>
+
+        <!-- Users Section -->
+        <section id="users-section" class="admin-section" style="display: none;">
+            <h2>User Management</h2>
+            <div class="user-management-controls">
+                <div class="search-container">
+                    <input type="text" id="user-search" placeholder="Search users...">
+                    <button onclick="searchUsers()">Search</button>
+                </div>
+                <div class="user-filters">
+                    <select id="user-filter-type">
+                        <option value="">All Users</option>
+                        <option value="new">New Users</option>
+                        <option value="frequent">Frequent Customers</option>
+                        <option value="vip">VIP Customers</option>
+                    </select>
+                    <button onclick="filterUsers()">Filter</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Total Orders</th>
+                            <th>Total Spent</th>
+                            <th>Registered Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be dynamically populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <div id="orders-section" class="admin-section" style="display: none;">
+            <div class="section-header">
+                <h2>Orders Management</h2>
+                <div class="search-container">
+                    <input type="text" id="order-search" placeholder="Search orders..." onkeyup="searchOrders()">
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Address</th>
+                            <th>Phone</th>
+                            <th>Food Items</th>
+                            <th>Price <span class="material-icons rupee-icon">currency_rupee</span></th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        <!-- Orders will be dynamically populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <section id="analytics-section" class="admin-section" style="display: none;">
+            <h2>Order Analytics</h2>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>Daily Orders</h3>
+                    <canvas id="daily-orders-chart"></canvas>
+                </div>
+                <div class="analytics-card">
+                    <h3>Order Status Distribution</h3>
+                    <canvas id="order-status-chart"></canvas>
+                </div>
+                <div class="analytics-card">
+                    <h3>Top Selling Items</h3>
+                    <canvas id="top-items-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Revenue Section -->
+        <section id="revenue-section" class="admin-section" style="display: none;">
+            <h2>Revenue Dashboard</h2>
+            <div class="revenue-summary">
+                <div class="revenue-card">
+                    <h3>Total Revenue</h3>
+                    <p id="total-revenue">₹0</p>
+                </div>
+                <div class="revenue-card">
+                    <h3>Today's Revenue</h3>
+                    <p id="today-revenue">₹0</p>
+                </div>
+                <div class="revenue-card">
+                    <h3>Average Order Value</h3>
+                    <p id="avg-order-value">₹0</p>
+                </div>
+            </div>
+            <div class="revenue-details">
+                <div class="revenue-breakdown">
+                    <h3>Revenue by Category</h3>
+                    <div id="category-revenue-breakdown" class="revenue-breakdown-list"></div>
+                </div>
+                <div class="revenue-breakdown">
+                    <h3>Monthly Revenue</h3>
+                    <div id="monthly-revenue-breakdown" class="revenue-breakdown-list"></div>
+                </div>
+            </div>
+            <div class="revenue-charts">
+                <div class="revenue-chart-card">
+                    <h3>Daily Orders</h3>
+                    <canvas id="daily-orders-chart"></canvas>
+                </div>
+                <div class="revenue-chart-card">
+                    <h3>Top Selling Items</h3>
+                    <canvas id="top-items-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section id="search-section" class="admin-section" style="display: none;">
+            <h2>Food Search</h2>
+            <div class="search-container">
+                <input type="text" id="food-search" placeholder="Search food items...">
+                <button onclick="searchFoodItems()">Search</button>
+            </div>
+            <div class="table-container">
+                <table id="food-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody id="food-table-body">
+                        <!-- Food items will be dynamically populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Add Food Section -->
+        <section id="add-food-section" class="admin-section" style="display: none;">
+            <h2>Add New Food Item</h2>
+            <form id="add-food-form" class="add-food-form">
+                <div class="form-row">
+                    <input type="text" id="food-name" placeholder="Food Name" required>
+                    <input type="number" id="food-price" placeholder="Price" required>
+                </div>
+                <div class="form-row">
+                    <select id="food-category" required>
+                        <option value="">Select Category</option>
+                        <option value="pizza">Pizza</option>
+                        <option value="burger">Burger</option>
+                        <option value="drinks">Drinks</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="appetizer">Appetizer</option>
+                        <option value="dessert">Dessert</option>
+                    </select>
+                    <input type="text" id="food-prep-time" placeholder="Preparation Time (mins)">
+                </div>
+                <div class="form-row">
+                    <input type="file" id="food-image" accept="image/*" required>
+                    <select id="food-availability">
+                        <option value="available">Available</option>
+                        <option value="limited">Limited Stock</option>
+                        <option value="unavailable">Unavailable</option>
+                    </select>
+                </div>
+                <textarea id="food-description" placeholder="Food Description" rows="4"></textarea>
+                <div class="form-row">
+                    <input type="number" id="food-calories" placeholder="Calories">
+                    <input type="text" id="food-allergens" placeholder="Allergens">
+                </div>
+                <button type="submit">Add Food Item</button>
+            </form>
+        </section>
+    </div>
+
+    <script src="admin.js"></script>
+    <script src="chatbot.js"></script>
+    <script>
+        // Authentication check
+        if (localStorage.getItem('isAdminLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        // Logout functionality
+        function logout() {
+            localStorage.removeItem('isAdminLoggedIn');
+            window.location.href = 'index.html';
+        }
+
+        // Welcome Screen Animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const welcomeOverlay = document.getElementById('welcome-overlay');
+            
+            // Hide welcome overlay after 3 seconds
+            setTimeout(() => {
+                welcomeOverlay.classList.add('hidden');
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
